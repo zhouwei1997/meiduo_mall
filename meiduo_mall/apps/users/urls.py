@@ -7,7 +7,7 @@
 """
 from django.conf.urls import url
 
-from . import views
+from users import views
 
 urlpatterns = [
     # 用户注册   reverse(user:register) == '/register/'

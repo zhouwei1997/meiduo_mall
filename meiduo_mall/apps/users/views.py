@@ -3,10 +3,32 @@
 import re
 
 from django import http
+from django.contrib.auth import login
 from django.db import DatabaseError
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.urls import reverse
 from django.views import View
+
+from meiduo_mall.utils.response_code import RETCODE
 from users.models import User
+
+
+class UsernameCountView(View):
+    """判断用户名是否重复注册"""
+
+    def get(self, request, username):
+        """
+        :param username:用户名
+        :return JSON
+        """
+        # 实现主题业务逻辑 使用username查询对应的记录的条数(filter返回的是满足条件的结果集)
+        count = User.objects.filter(username=username).count()
+        # 响应结果
+        return http.JsonResponse({
+            'code': RETCODE.OK,
+            'errmsg': 'OK',
+            'count': count
+        })
 
 
 class RegisterView(View):
@@ -43,15 +65,21 @@ class RegisterView(View):
         if password != password2:
             return http.HttpResponseForbidden('两次输入的密码不一致')
         # 判断手机号是否是11个字符
-        if not re.match(r'^1[3-9]\d(9)$', mobile):
+        if not re.match(r'^1[3-9]\d{9}$', mobile):
             return http.HttpResponseForbidden('请输入正确的手机号')
         # 判断用户是否勾选了协议
         if allow != 'on':
             return http.HttpResponseForbidden('请勾选用户协议')
         # 保存注册数据：注册业务核心
         try:
-            User.objects.create_user(username=username, password=password, mobile=mobile)
+            user = User.objects.create_user(
+                username=username, password=password, mobile=mobile)
         except DatabaseError:
-            return render(request, 'register.html', {'register_errmsg': '注册失败'})
+            return render(
+                request, 'register.html', {
+                    'register_errmsg': '注册失败'})
+        # 实现会话保持
+        login(request, user)
         # 响应结果-- 重定向到首页
-        return http.HttpResponse('注册成功，重定向到首页')
+        # return http.HttpResponse('注册成功，重定向到首页')
+        return redirect(reverse('contents:index'))
