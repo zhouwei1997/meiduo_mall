@@ -19,6 +19,7 @@ class UsernameCountView(View):
     def get(self, request, username):
         """
         :param username:用户名
+        :param request:请求对象
         :return JSON
         """
         # 实现主题业务逻辑 使用username查询对应的记录的条数(filter返回的是满足条件的结果集)
@@ -80,6 +81,5 @@ class RegisterView(View):
                     'register_errmsg': '注册失败'})
         # 实现会话保持
         login(request, user)
-        # 响应结果-- 重定向到首页
-        # return http.HttpResponse('注册成功，重定向到首页')
+        # 响应结果  重定向到首页
         return redirect(reverse('contents:index'))
