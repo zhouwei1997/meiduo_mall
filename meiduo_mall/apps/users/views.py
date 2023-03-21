@@ -4,6 +4,7 @@ from django import http
 from django.db import DatabaseError
 from django.shortcuts import render
 from django.views import View
+
 from users.models import User
 
 
@@ -25,7 +26,7 @@ class RegisterView(View):
         password = request.POST.get('password')  # 密码
         password2 = request.POST.get('password2')  # 确认密码
         mobile = request.POST.get('mobile')  # 手机号
-        allow = request.POST.get('allow')  # 是否同意协议
+        allow = request.POST.get('allow')  # 是否同意用户协议
         """
         校验参数
         前后端校验需要分开
@@ -52,7 +53,7 @@ class RegisterView(View):
             return http.HttpResponseForbidden('请勾选用户协议')
         # 保存注册数据：注册业务核心
         try:
-            user = User.objects.create_user(username=username, password=password, mobile=mobile)
+            User.objects.create_user(username=username, password=password, mobile=mobile)
         except DatabaseError:
             return render(request, 'register.html', {'register_errmsg': '注册失败'})
         # 响应结果-- 重定向到首页
