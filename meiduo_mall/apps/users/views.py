@@ -1,17 +1,14 @@
+# Create your views here.
+
 import re
 
 from django import http
 from django.db import DatabaseError
 from django.shortcuts import render
 from django.views import View
-
 from users.models import User
 
 
-# from users.models import User
-
-
-# Create your views here.
 class RegisterView(View):
     """用户注册"""
 
