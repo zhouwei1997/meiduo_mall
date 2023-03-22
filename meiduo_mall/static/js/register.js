@@ -12,6 +12,7 @@ let vm = new Vue({
         allow: '',
         image_code_url: '',
         uuid: '',
+        image_code: '',
 
         // v-show
         error_name: false,
@@ -19,10 +20,12 @@ let vm = new Vue({
         error_password2: false,
         error_mobile: false,
         error_allow: false,
+        error_image_code: false,
 
         // error_message
         error_name_message: '',
         error_mobile_message: '',
+        error_image_message: '',
     },
     mounted() {
         //生成图形验证码
@@ -108,6 +111,15 @@ let vm = new Vue({
                 })
             }
         },
+        //校验图形验证码
+        check_image_code() {
+            if (this.image_code.length != 4) {
+                this.error_image_message = '请输入图形验证码';
+                this.error_image_code = true;
+            } else {
+                this.error_image_code = false;
+            }
+        },
         // 校验是否勾选协议
         check_allow() {
             if (!this.allow) {
@@ -123,6 +135,7 @@ let vm = new Vue({
             this.check_password2();
             this.check_mobile();
             this.check_allow();
+            this.check_image_code();
 
             // 在校验之后，注册数据中，只要有错误，就禁用掉表单的提交事件
             if (this.error_name == true || this.error_password == true || this.error_password2 == true || this.error_mobile == true || this.error_allow == true) {
