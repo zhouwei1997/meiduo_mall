@@ -13,6 +13,18 @@ from meiduo_mall.utils.response_code import RETCODE
 from users.models import User
 
 
+class MobileCountView(View):
+    """判断手机号是否重复"""
+
+    def get(self, request, mobile):
+        count = User.objects.filter(mobile=mobile).count()
+        return http.JsonResponse({
+            'code': RETCODE.OK,
+            'errmsg': 'OK',
+            'count': count
+        })
+
+
 class UsernameCountView(View):
     """判断用户名是否重复注册"""
 
