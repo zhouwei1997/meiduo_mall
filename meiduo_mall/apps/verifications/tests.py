@@ -1,16 +1,12 @@
 # Create your tests here.
-from ronglian_sms_sdk import SmsSDK
 
-from verifications import constants
-
-
-def send_message():
-    sdk = SmsSDK(constants.ACCOUNT_SID, constants.AUTH_TOKEN, constants.APP_ID)
-    tid = '1'
-    mobile = '15027130472'
-    datas = ('123456', '5分钟')
-    resp = sdk.sendMessage(tid, mobile, datas)
-    print(resp)
+from verifications.views import CCP
 
 
-send_message()
+def sent_SMS_test():
+    ccp = CCP()
+    ccp.send_template('1', '15027130472', ['123456', '5分钟'])
+
+
+if __name__ == '__main__':
+    sent_SMS_test()
