@@ -2,6 +2,7 @@
 from django import http
 from django.views import View
 from django_redis import get_redis_connection
+from ronglian_sms_sdk import SmsSDK
 
 from verifications import constants
 from verifications.libs.captcha.captcha import captcha
@@ -25,3 +26,10 @@ class ImageCodeView(View):
         redis_conn.setex('img_%s' % uuid, constants.IMAGE_CODE_REDIS_EXPIRES, text)  # 保存图形验证码到redis，设置过期时间为 300s
         # 响应结果
         return http.HttpResponse(image, content_type='image/jpg')
+
+
+class SmsCodeView(View):
+    """短信验证码"""
+
+    def get(self, request):
+        sdk = SmsSDK(constants.ACCOUNT_SID, constants.AUTH_TOKEN, constants.APP_ID)
