@@ -1,4 +1,6 @@
 # Create your views here.
+import json
+
 from django import http
 from django.views import View
 from django_redis import get_redis_connection
@@ -28,8 +30,43 @@ class ImageCodeView(View):
         return http.HttpResponse(image, content_type='image/jpg')
 
 
+class CCP(object):
+    """发送短信验证码的单例类"""
+
+    def __new__(cls, *args, **kwargs):
+        """
+        定义单例的初始化方法
+        判断单例是否存在，如果存在，初始化。返回单例
+        :param args:
+        :param kwargs:
+        :return 单例
+        """
+        # _instance 属性中存储的就是单例
+        if not hasattr(cls, '_instance'):
+            cls._instance = super(CCP, cls).__new__(cls, *args, **kwargs)
+            # 初始化单例
+            cls._instance.sdk = SmsSDK(constants.ACCOUNT_SID, constants.AUTH_TOKEN, constants.APP_ID)
+        return cls._instance
+
+    def send_template(self, tid, mobile, datas):
+        """
+        发送短信验证码单例方法
+        :param datas: 内容数据
+        :param tid: 模板ID
+        :param mobile: 手机号
+        :return: 成功 0  失败 -1
+        """
+        response = json.loads(self.sdk.sendMessage(tid, mobile, datas))
+        if response.get('statusCode') == '000000':
+            return 0
+        else:
+            return -1
+
+
 class SmsCodeView(View):
     """短信验证码"""
+    pass
 
-    def get(self, request):
-        sdk = SmsSDK(constants.ACCOUNT_SID, constants.AUTH_TOKEN, constants.APP_ID)
+# if __name__ == '__main__':
+#     ccp = CCP()
+#     ccp.send_template('1', '15027130472', ['123456', '5分钟'])
