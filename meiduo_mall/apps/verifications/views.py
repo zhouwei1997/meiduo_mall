@@ -1,13 +1,19 @@
 # Create your views here.
 import json
+import logging
+import random
 
 from django import http
 from django.views import View
 from django_redis import get_redis_connection
 from ronglian_sms_sdk import SmsSDK
 
+from meiduo_mall.utils.response_code import RETCODE
 from verifications import constants
 from verifications.libs.captcha.captcha import captcha
+
+# 创建日志输出器
+logger = logging.getLogger('django')
 
 
 class ImageCodeView(View):
@@ -63,10 +69,49 @@ class CCP(object):
             return -1
 
 
-class SmsCodeView(View):
+class SMSCodeView(View):
     """短信验证码"""
-    pass
 
-# if __name__ == '__main__':
-#     ccp = CCP()
-#     ccp.send_template('1', '15027130472', ['123456', '5分钟'])
+    def get(self, request, mobile):
+        """
+        :param request: 请求参数
+        :param mobile: 手机号
+        :return: JSON
+        """
+        # 接收参数
+        image_code_client = request.GET.get('image_code')
+        uuid = request.GET.get('uuid')
+
+        # 校验参数
+        if not all([image_code_client, uuid]):
+            return http.HttpResponseForbidden('缺少必要参数')
+
+        # 提取图形验证码
+        redis_conn = get_redis_connection('verify_code')
+        image_code_server = redis_conn.get('img_%s' % uuid)
+        if image_code_server is None:
+            return http.JsonResponse({
+                'code': RETCODE.IMAGECODEERR,
+                'errmsg': '图形验证码已失效'
+            })
+        # 删除图形验证码
+        redis_conn.delete('img_%s' % uuid)
+        # 对比图形验证码
+        image_code_server = image_code_server.decode()  # 将bytes转字符串在比较
+        if image_code_client.lower() != image_code_server.lower():  # 全部转换为小写，然后再比较
+            return http.JsonResponse({
+                'code': RETCODE.IMAGECODEERR,
+                'errmsg': '验证码输入有误'
+            })
+        # 生成短信验证码
+        sms_code = '%06d' % random.randint(0, 999999)
+        logger.info(sms_code)
+        # 保存短信验证码
+        redis_conn.setex('sms_%s' % mobile, constants.SMS_CODE_REDIS_EXPIRES, sms_code)
+        # 发送短信验证码
+        CCP().send_template(constants.SEND_SMS_TEMPLATE_ID, mobile, [sms_code, constants.SMS_CODE_REDIS_EXPIRES // 60])
+        # 响应结果
+        return http.JsonResponse({
+            'code': RETCODE.IMAGECODEERR,
+            'errmsg': '短信发送成功'
+        })
