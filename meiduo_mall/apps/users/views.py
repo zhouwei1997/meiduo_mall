@@ -8,6 +8,7 @@ from django.db import DatabaseError
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.views import View
+from django_redis import get_redis_connection
 
 from meiduo_mall.utils.response_code import RETCODE
 from users.models import User
@@ -59,6 +60,7 @@ class RegisterView(View):
         password2 = request.POST.get('password2')  # 确认密码
         mobile = request.POST.get('mobile')  # 手机号
         allow = request.POST.get('allow')  # 是否同意用户协议
+        sms_code_client = request.POST.get('sms_code')  # 短信验证码
         """
         校验参数
         前后端校验需要分开
@@ -80,6 +82,17 @@ class RegisterView(View):
         # 判断手机号是否是11个字符
         if not re.match(r'^1[3-9]\d{9}$', mobile):
             return http.HttpResponseForbidden('请输入正确的手机号')
+        # 判断短信验证码是否合法
+        redis_conn = get_redis_connection('verify_code')
+        sms_code_server = redis_conn.get('sms_%s' % mobile)
+        if sms_code_server is None:
+            return render(
+                request, 'register.html', {
+                    'sms_code_errmsg': '验证码已失效'})
+        if sms_code_client != sms_code_server.decode():
+            return render(
+                request, 'register.html', {
+                    'sms_code_errmsg': '短信验证码输入有误'})
         # 判断用户是否勾选了协议
         if allow != 'on':
             return http.HttpResponseForbidden('请勾选用户协议')
