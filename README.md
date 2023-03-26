@@ -397,3 +397,121 @@ LANGUAGE_CODE = 'zh-hans'
 TIME_ZONE = 'Asia/Shanghai'
 ~~~
 
+## 用户注册
+
+
+
+### 展示用户注册页面
+
+#### 创建用户模块子应用
+
+1. 准备`apps`包，并mark为`namespace Package`
+
+    ![image-20230326184118894](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202303261841026.png)
+
+    ![image-20230326184138433](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202303261841504.png)
+
+2. 在`apps`包下创建子应用`user`
+
+    ~~~shell 
+    cd ~/projects/meiduo_project/meiduo_mall/meiduo_mall/apps
+    python ../../manage.py startapp users
+    ~~~
+
+    ![image-20230326184250512](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202303261842576.png)
+
+3. 注册用户模块子应用
+
+    ~~~Python
+    INSTALLED_APPS = [
+        'django.contrib.admin',
+        'django.contrib.auth',
+        'django.contrib.contenttypes',
+        'django.contrib.sessions',
+        'django.contrib.messages',
+        'django.contrib.staticfiles',
+        'users',  # 用户模块
+    ]
+    ~~~
+
+#### 追加导包路径
+
+    ~~~Python
+    sys.path.append(os.path.join(BASE_DIR, 'apps'))
+    ~~~
+
+#### 展示用户注册页面
+
+##### 准备用户注册模板文件
+
+在项目根目录新建`templates`目录，并mark为`Template Folder`
+
+![image-20230326184559639](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202303261845701.png)
+
+​    ![image-20230326184702147](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202303261847220.png)
+
+##### 加载页面静态文件
+
+~~~HTML
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>美多商城-注册</title>
+    <link rel="stylesheet" type="text/css" href="{{ static('css/reset.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ static('css/main.css') }}">
+    <script type="text/javascript" src="{{ static('js/vue-2.5.16.js') }}"></script>
+    <script type="text/javascript" src="{{ static('js/axios-0.18.0.min.js') }}"></script>
+</head>
+~~~
+
+##### 定义用户注册视图
+
+~~~Python
+class RegisterView(View):
+    """用户注册"""
+
+    def get(self, request):
+        """
+        提供注册界面
+        :param request: 请求对象
+        :return: 注册界面
+        """
+        return render(request, 'register.html')
+~~~
+
+##### 定义用户注册路由
+
+###### 总路由
+
+~~~Python
+urlpatterns = [
+    # users
+    url(r'^', include('users.urls', namespace='users')),
+]
+~~~
+
+###### 子路由
+
+~~~Python
+urlpatterns = [
+    # 用户注册   reverse(user:register) == '/register/'
+    url(r'^register/$', views.RegisterView.as_view(), name='register'),
+]
+~~~
+
+### 定义用户模型类
+
+#### Django默认用户认证系统
+
+- Django自带用户认证系统
+    - 它处理用户账号、组、权限以及基于cookie的用户会话
+- Django认证系统位置
+    - `django.contrib.auth`包含认证框架的核心和默认的模型
+    - `django.contrib.contenttypes`是Django内容类型系统，它允许权限与创建的模型关联
+- Django认证系统同时处理认证和授权
+    - 认证：验证一个用户是否它声称的那个人，可用于账号登录。
+    - 授权：授权决定一个通过了认证的用户被允许做什么。
+- Django认证系统包含的内容
+    - 用户：**用户模型类**、用户认证。
+    - 权限：标识一个用户是否可以做一个特定的任务，MIS系统常用到。
+    - 组：对多个具有相同权限的用户进行统一管理，MIS系统常用到。
+    - 密码：一个可配置的密码哈希系统，设置密码、密码校验。
