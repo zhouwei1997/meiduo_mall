@@ -614,12 +614,619 @@ AUTH_USER_MODEL = 'users.USER'
 
 ### 用户注册业务实现
 #### 用户注册业务逻辑分析
+
+![image-20230403143201629](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202304031432727.png)
+
 #### 用户支持接口涉及和定义
+
+##### 设计接口基本思路
+
+- 对于接口的设计，我们要根据具体的业务逻辑，涉及出适合业务逻辑的接口
+- 设计接口的思路
+  - 分析要实现的业务逻辑：
+    - 明确在这个业务中涉及到几个项目子业务
+    - 将每个子业务当做一个接口来涉及
+  - 分析接口的功能任务，明确接口的访问方式与返回数据：
+    - 请求方式（如GET、POST、PUT、DELETE等）
+    - 请求地址
+    - 请求参数（如路径参数、查询字符集、表单、JSON等）
+    - 响应数据（如HTML、JSON等）
+
+##### 用户注册接口设计
+
+> 1. 请求方式
+
+| 选项     | 方案       |
+| -------- | ---------- |
+| 请求方法 | POST       |
+| 请求地址 | /register/ |
+
+> 2. 请求参数：表单参数
+
+| 参数名   | 类型   | 是否必传 | 说明   |
+| -------- | ------ | -------- | ------ |
+| username | string | 是       | 用户名 |
+| password| string | 是       | 密码 |
+| password2 | string | 是       | 确认密码 |
+| mobile | string | 是       | 手机号 |
+| sms_code | string | 是       | 短信验证码 |
+| allow | string | 是       | 是否同意用户协议 |
+
+> 3. 响应结果：HTML
+>    1. `register.html`
+
+| 响应结果 | 响应内容     |
+| -------- | ------------ |
+| 注册失败 | 响应错误提示 |
+| 注册成功 | 重定向到首页 |
+
+##### 用户注册接口定义
+
+1. 注册视图
+
+   ~~~Python
+   class RegisterView(View):
+       """用户注册"""
+   
+       def get(self, request):
+           """
+           提供注册界面
+           :param request: 请求对象
+           :return: 注册界面
+           """
+           return render(request, 'register.html')
+   
+       def post(self, request):
+           """
+           实现用户注册
+           :param request: 请求对象
+           :return: 注册结果
+           """
+           pass
+   ~~~
+
+2. 总路由
+
+   ~~~Python
+   urlpatterns = [
+       # users
+       url(r'^', include('users.urls', namespace='users')),
+   ]
+   ~~~
+
+3. 子路由
+
+   ~~~Python
+   urlpatterns = [
+       # 注册
+       url(r'^register/$', views.RegisterView.as_view(), name='register'),
+   ]
+   ~~~
+
 #### 用户注册前端逻辑
+
+##### 用户注册页面绑定Vue数据
+
+1. 准备div盒子标签
+
+~~~HTML
+<div id="app">
+    <body>
+    ......
+    </body>
+</div>
+~~~
+
+2. register.html
+   1. 绑定内容：变量、事件、错误提示等
+
+~~~html
+<form method="post" class="register_form" @submit="on_submit" v-cloak>
+    {{ csrf_input }}
+    <ul>
+        <li>
+            <label>用户名:</label>
+            <input type="text" v-model="username" @blur="check_username" name="username" id="user_name">
+            <span class="error_tip" v-show="error_name">[[ error_name_message ]]</span>
+        </li>
+        <li>
+            <label>密码:</label>
+            <input type="password" v-model="password" @blur="check_password" name="password" id="pwd">
+            <span class="error_tip" v-show="error_password">请输入8-20位的密码</span>
+        </li>
+        <li>
+            <label>确认密码:</label>
+            <input type="password" v-model="password2" @blur="check_password2" name="password2" id="cpwd">
+            <span class="error_tip" v-show="error_password2">两次输入的密码不一致</span>
+        </li>
+        <li>
+            <label>手机号:</label>
+            <input type="text" v-model="mobile" @blur="check_mobile" name="mobile" id="phone">
+            <span class="error_tip" v-show="error_mobile">[[ error_mobile_message ]]</span>
+        </li>
+        <li>
+            <label>图形验证码:</label>
+            <input type="text" name="image_code" id="pic_code" class="msg_input">
+            <img src="{{ static('images/pic_code.jpg') }}" alt="图形验证码" class="pic_code">
+            <span class="error_tip">请填写图形验证码</span>
+        </li>
+        <li>
+            <label>短信验证码:</label>
+            <input type="text" name="sms_code" id="msg_code" class="msg_input">
+            <a href="javascript:;" class="get_msg_code">获取短信验证码</a>
+            <span class="error_tip">请填写短信验证码</span>
+        </li>
+        <li class="agreement">
+            <input type="checkbox" v-model="allow" @change="check_allow" name="allow" id="allow">
+            <label>同意”美多商城用户使用协议“</label>
+            <span class="error_tip2" v-show="error_allow">请勾选用户协议</span>
+        </li>
+        <li class="reg_sub">
+            <input type="submit" value="注 册">
+        </li>
+    </ul>
+</form>
+~~~
+
+##### 用户注册JS文件实现用户交互
+
+1. 导入Vue.js库和ajax请求的库
+
+   ~~~HTML
+   <script type="text/javascript" src="{{ static('js/vue-2.5.16.js') }}"></script>
+   <script type="text/javascript" src="{{ static('js/axios-0.18.0.min.js') }}"></script>
+   ~~~
+
+2. 准备register.js文件
+
+   ~~~HTML
+   script type="text/javascript" src="{{ static('js/register.js') }}"></script>
+   ~~~
+
+   ~~~js
+   //绑定内容：变量、事件、错误提示等
+   let vm = new Vue({
+       el: '#app',
+       // 修改Vue读取变量的语法
+       delimiters: ['[[', ']]'],
+       data: {
+           username: '',
+           password: '',
+           password2: '',
+           mobile: '',
+           allow: '',
+   
+           error_name: false,
+           error_password: false,
+           error_password2: false,
+           error_mobile: false,
+           error_allow: false,
+   
+           error_name_message: '',
+           error_mobile_message: '',
+       },
+       methods: {
+           // 校验用户名
+           check_username(){
+           },
+           // 校验密码
+           check_password(){
+           },
+           // 校验确认密码
+           check_password2(){
+           },
+           // 校验手机号
+           check_mobile(){
+           },
+           // 校验是否勾选协议
+           check_allow(){
+           },
+           // 监听表单提交事件
+           on_submit(){
+           },
+       }
+   });
+   ~~~
+
+3. 用户交互事件实现
+
+   ~~~js
+   methods: {
+       // 校验用户名
+       check_username(){
+           let re = /^[a-zA-Z0-9_-]{5,20}$/;
+           if (re.test(this.username)) {
+               this.error_name = false;
+           } else {
+               this.error_name_message = '请输入5-20个字符的用户名';
+               this.error_name = true;
+           }
+       },
+       // 校验密码
+       check_password(){
+           let re = /^[0-9A-Za-z]{8,20}$/;
+           if (re.test(this.password)) {
+               this.error_password = false;
+           } else {
+               this.error_password = true;
+           }
+       },
+       // 校验确认密码
+       check_password2(){
+           if(this.password != this.password2) {
+               this.error_password2 = true;
+           } else {
+               this.error_password2 = false;
+           }
+       },
+       // 校验手机号
+       check_mobile(){
+           let re = /^1[3-9]\d{9}$/;
+           if(re.test(this.mobile)) {
+               this.error_mobile = false;
+           } else {
+               this.error_mobile_message = '您输入的手机号格式不正确';
+               this.error_mobile = true;
+           }
+       },
+       // 校验是否勾选协议
+       check_allow(){
+           if(!this.allow) {
+               this.error_allow = true;
+           } else {
+               this.error_allow = false;
+           }
+       },
+       // 监听表单提交事件
+       on_submit(){
+           this.check_username();
+           this.check_password();
+           this.check_password2();
+           this.check_mobile();
+           this.check_allow();
+   
+           if(this.error_name == true || this.error_password == true || this.error_password2 == true
+               || this.error_mobile == true || this.error_allow == true) {
+               // 禁用表单的提交
+               window.event.returnValue = false;
+           }
+       },
+   }
+   ~~~
+
+##### 知识要点
+
+1. VUE淡定页面的套路
+   1. 导入Vue.js库和Ajax请求的库
+   2. 准备div盒子模型标签
+   3. 准备js文件
+   4. HTML页面绑定变量、事件等
+   5. js文件定义变量、事件等
+2. 错误提示
+   1. 如果错误提示信息是固定的，可以吧错误提示信息写死，再通过v-v-show控制是否展示
+   2. 如果错误提示信息不是固定的，可以使用绑定的变量动态的展示错误提示信息，再通过v-v-show控制是否展示
+3. 修改Vue变量的读取语法，避免和Django模板语法冲突
+   1. `delimiters: ['[[', ']]']`
+
 #### 用户注册后端逻辑
+
+##### 接受参数
+
+> 用户注册数据从注册表单发送过来的，所以使用`request.POST`来提取
+
+~~~Python
+username = request.POST.get('username')  # 用户名
+password = request.POST.get('password')  # 密码
+password2 = request.POST.get('password2')  # 确认密码
+mobile = request.POST.get('mobile')  # 手机号
+allow = request.POST.get('allow')  # 是否同意用户协议
+sms_code_client = request.POST.get('sms_code')  # 短信验证码
+~~~
+
+##### 校验参数
+
+> 前端校验过的后端也要校验，后端的校验和前端的校验要一致
+
+~~~Python
+# 判断参数是否齐全
+# 判断用户名是否是5-20个字符
+# 判断密码是否是8-20个数字
+# 判断两次密码是否一致
+# 判断手机号是否合法
+# 判断是否勾选用户协议
+~~~
+
+~~~Python
+# 判断参数是否齐全  all([列表]) 会去校验列表中的元素是否为空，只要有一个为空，返回False
+        if not all([username, password, password2, mobile, allow]):
+            return http.HttpResponseForbidden('缺少必传参数')
+        # 判断用户名是否是5-20个字符
+        if not re.match(r'^[a-zA-Z0-9_-]{5,20}$', username):
+            return http.HttpResponseForbidden('请输入5-20个字符的用户名')
+        # 判断密码是否是8-20个字符
+        if not re.match(r'^[a-zA-Z0-9]{8,20}$', password):
+            return http.HttpResponseForbidden('请输入8-20个字符的密码')
+        # 判断两次输入的密码是否一致
+        if password != password2:
+            return http.HttpResponseForbidden('两次输入的密码不一致')
+        # 判断手机号是否是11个字符
+        if not re.match(r'^1[3-9]\d{9}$', mobile):
+            return http.HttpResponseForbidden('请输入正确的手机号')
+        # 判断短信验证码是否合法
+        redis_conn = get_redis_connection('verify_code')
+        sms_code_server = redis_conn.get('sms_%s' % mobile)
+        if sms_code_server is None:
+            return render(
+                request, 'register.html', {
+                    'sms_code_errmsg': '验证码已失效'})
+        if sms_code_client != sms_code_server.decode():
+            return render(
+                request, 'register.html', {
+                    'sms_code_errmsg': '短信验证码输入有误'})
+        # 判断用户是否勾选了协议
+        if allow != 'on':
+            return http.HttpResponseForbidden('请勾选用户协议')
+~~~
+
+> 提示：这里校验的参数，前端已经校验过，如果此时参数还是出错，说明该请求是非正常渠道发送的，所以直接禁止本次请求
+
+##### 保存注册数据
+
+> - 这里使用Django认证系统用户模型类提供的 **create_user()** 方法创建新的用户。
+> - 这里 **create_user()** 方法中封装了 **set_password()** 方法加密密码。
+
+~~~python 
+# 保存注册数据：注册业务核心
+try:
+	user = User.objects.create_user(username=username, password=password, mobile=mobile)
+except DatabaseError:
+	return render(request, 'register.html', {'register_errmsg': '注册失败'})
+
+# 响应注册结果
+return http.HttpResponse('注册成功，重定向到首页')
+~~~
+
+> 如果注册失败，需要在页面上渲染注册失败的提示信息
+
+~~~HTML
+{% if register_errmsg %}
+	<span class="error_tip2">{{ register_errmsg }}</span>
+{% endif %}
+~~~
+
+##### 响应注册结果
+
+- 注册成功，重定向到首页
+
+1. 创建首页广告应用：contents
+
+   ~~~shell
+   cd C:\Users\Maxzzz\Desktop\meiduo_mall\meiduo_mall\apps
+   python ../../manage.py startapp contents
+   ~~~
+
+   ![image-20230403151546978](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202304031515064.png)
+
+2. 定义首页广告视图：IndexView
+
+   ~~~Python
+   class IndexView(View):
+       """首页广告"""
+   
+       def get(self, request):
+           """提供首页广告界面"""
+           return render(request, 'index.html')
+   ~~~
+
+3. 配置首页广告路由：绑定秘密空间
+
+   ~~~Python
+   # contents
+   url(r'^', include('contents.urls', namespace='contents')),
+   ~~~
+
+   ~~~Python
+   # 首页广告
+   url(r'^$', views.IndexView.as_view(), name='index'),
+   ~~~
+
+4. 测试首页广告是否正常访问
+
+5. 响应注册结果：重定向到首页
+
+~~~Python
+# 响应注册结果
+return redirect(reverse('contents:index'))
+~~~
+
 #### 状态保持
+
+> 说明：
+>
+> - 如果需求是注册成功后即表示用户登录成功，那么此时可以在注册成功后实现状态保持
+> - 如果需求是注册成功后不表示用户登录成功，那么此时不需要在注册成功后实现状态保持
+
+##### login()方法介绍
+
+- 用户登录本质：
+
+  - 状态保持
+  - 将通过认证的用户的唯一标识信息（如：用户ID）写入到当前浏览器的cookie和服务端的session中
+
+- login()方法
+
+  - Django用户认证系统提供了`login()`方法
+  - 封装了写入session的操作，帮助快速登入一个用户，并实现状态保持
+
+- login()位置
+
+  - `django.contrib.auth.__init__.py`文件中
+
+    ~~~Python
+    login(request,user,backed=None)
+    ~~~
+
+- 状态保持session数据存储的位置：Redis数据库的1号库
+
+  ~~~Python
+  # 配置session的引擎
+  SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+  SESSION_CACHE_ALIAS = "session"
+  ~~~
+
+##### login()方法登录用户
+
+~~~Python
+ # 保存注册数据：注册业务核心
+try:
+	user = User.objects.create_user(username=username, password=password, mobile=mobile)
+except DatabaseError:
+	return render(request, 'register.html', {'register_errmsg': '注册失败'})
+
+# 实现会话保持
+login(request, user)
+# 响应结果  重定向到首页
+return redirect(reverse('contents:index'))
+~~~
+
 #### 用户名重复注册
+
+##### 用户名重复注册逻辑分析
+
+![image-20230403152836341](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202304031528423.png)
+
+##### 用户名重复注册接口设计和定义
+
+1. 请求方式
+
+   | 选项     | 方案                                                |
+   | -------- | --------------------------------------------------- |
+   | 请求方法 | GET                                                 |
+   | 请求地址 | /usernames/(?P<username>[a-zA-Z0-9_-]{5,20})/count/ |
+
+2. 请求参数：路径参数
+
+   | 参数名   | 类型   | 是否必传 | 说明   |
+   | -------- | ------ | -------- | ------ |
+   | username | string | 是       | 用户名 |
+
+3. 响应结果：JSON
+
+   | 响应结果 | 响应内容           |
+   | -------- | ------------------ |
+   | code     | 状态码             |
+   | errmsg   | 错误信息           |
+   | count    | 记录该用户名的个数 |
+
+##### 用户名重复注册后端逻辑
+
+~~~Python
+class UsernameCountView(View):
+    """判断用户名是否重复注册"""
+
+    def get(self, request, username):
+        """
+        :param username:用户名
+        :param request:请求对象
+        :return JSON
+        """
+        # 实现主题业务逻辑 使用username查询对应的记录的条数(filter返回的是满足条件的结果集)
+        count = User.objects.filter(username=username).count()
+        # 响应结果
+        return http.JsonResponse({
+            'code': RETCODE.OK,
+            'errmsg': 'OK',
+            'count': count
+        })
+~~~
+
+##### 用户名重复注册前端逻辑
+
+~~~js
+//判断用户名是否重复注册
+if (this.error_name == false) {//只有用户输入的用户名满足条件时才会去判断
+	let url = '/usernames/' + this.username + '/count/';
+	axios.get(url, {
+        responseType: 'json'
+    }).then(response => {
+        if (response.data.count == 1) {
+            //用户名已存在
+            this.error_name_message = '用户名已存在';
+            this.error_name = true;
+        } else {
+            //用户名不存在
+            this.error_name = false;
+        }
+    })
+        .catch(error => {
+        console.log(error.response);
+    })
+}
+~~~
+
 #### 手机号重复注册
+
+##### 手机号重复注册逻辑分析
+
+![image-20230403153754067](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202304031537146.png)
+
+##### 手机号重复注册接口设计和定义
+
+1. 请求方式
+	| 选项     | 方案                                    |
+   | -------- | --------------------------------------- |
+   | 请求方法 | GET                                     |
+   | 请求地址 | /mobiles/(?P<mobile>1[3-9]\d{9})/count/ |
+2. 请求参数：路径参数
+	| 参数名 | 类型   | 是否必传 | 说明   |
+   | ------ | ------ | -------- | ------ |
+   | mobile | string | 是       | 手机号 |
+3. 响应结果：JSON
+
+	| 响应结果 | 响应内容           |
+   | -------- | ------------------ |
+   | code     | 状态码             |
+   | errmsg   | 错误信息           |
+   | count    | 记录该用户名的个数 |
+
+##### 手机号重复注册后端逻辑
+
+~~~Python
+class MobileCountView(View):
+    """判断手机号是否重复"""
+
+    def get(self, request, mobile):
+        count = User.objects.filter(mobile=mobile).count()
+        return http.JsonResponse({
+            'code': RETCODE.OK,
+            'errmsg': 'OK',
+            'count': count
+        })
+~~~
+
+##### 手机号重复注册前端逻辑
+
+~~~js
+//判断手机号是否重复
+if (this.error_mobile == false) {
+    let url = '/mobiles/' + this.mobile + '/count/';
+    axios.get(url, {
+        responseType: 'json'
+    }).then(response => {
+        if (response.data.count == 1) {
+            //用户名已存在
+            this.error_mobile_message = '该手机号已注册';
+            this.error_mobile = true;
+        } else {
+            //用户名不存在
+            this.error_mobile = false;
+        }
+    }).catch(error => {
+        console.log(error.response);
+    })
+}
+~~~
+
 ## 验证码
 
 ### 图形验证码
@@ -647,8 +1254,6 @@ AUTH_USER_MODEL = 'users.USER'
 #### 避免频繁发送短信验证码
 
 #### pipeline操作Redis数据库
-
-#### 
 
 ### 异步方案RabbitMQ和Celery
 
