@@ -588,6 +588,30 @@ class User(AbstractUser):
 
 #### 迁移用户模型类
 
+##### 指定用户模型类
+
+- Django用户模型类是通过全局配置项 `AUTH_USER_MODEL`决定的
+- 配置规则：在项目的`settings.py`文件中配置`AUTH_USER_MODEL='应用名.模型类名'`
+
+~~~Python
+# 指定本项目用户模型类
+AUTH_USER_MODEL = 'users.USER'
+~~~
+
+##### 迁移用户模型类
+
+1. 创建迁移文件
+
+   ~~~Python
+   python manage.py makemigrations
+   ~~~
+
+2. 执行迁移文件
+
+   ~~~Python
+   python manage.py migrate
+   ~~~
+
 ### 用户注册业务实现
 #### 用户注册业务逻辑分析
 #### 用户支持接口涉及和定义
