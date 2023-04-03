@@ -1233,7 +1233,66 @@ if (this.error_mobile == false) {
 
 #### 图形验证码实现逻辑
 
+![image-20230403155330621](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202304031553707.png)
+
+> 需要新建应用`verifications`
+
+##### 知识要点
+
+1. 将图形验证码的文字信息保存到Redis数据库，为短信验证码做准备。
+2. UUID 用于唯一区分该图形验证码属于哪个用户，也可使用其他唯一标识信息来实现
+
 #### 图形验证码接口设计和定义
+
+##### 图形验证码接口设计
+
+1. 请求方式
+
+   | 选项     | 方案                           |
+   | -------- | ------------------------------ |
+   | 请求方法 | GET                            |
+   | 请求地址 | /image_codes/(?P<uuid>[\w-]+)/ |
+
+2. 请求参数：路径参数
+
+   | 参数名 | 类型   | 是否必传 | 说明     |
+   | ------ | ------ | -------- | -------- |
+   | uuid   | string | 是       | 唯一编号 |
+
+3. 响应结果：image/jpg
+
+   ![image-20230403155742129](https://zhouwei-images.oss-cn-hangzhou.aliyuncs.com/202304031557187.png)
+
+##### 图形验证码接口定义
+
+1. 图形验证码视图
+
+   ~~~Python
+   class ImageCodeView(View):
+       """图形验证码"""
+   
+       def get(self, request, uuid):
+           """
+           :param request: 请求对象
+           :param uuid: 唯一标识图形验证码所属于的用户
+           :return: image/jpg
+           """
+           pass
+   ~~~
+
+2. 总路由
+
+   ~~~Python
+   # verifications
+   url(r'^', include('verifications.urls')),
+   ~~~
+
+3. 子路由
+
+   ~~~Python
+   # 图形验证码
+   url(r'^image_codes/(?P<uuid>[\w-]+)/$', views.ImageCodeView.as_view()),
+   ~~~
 
 #### 图形验证码后端逻辑
 
