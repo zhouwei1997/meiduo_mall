@@ -108,3 +108,15 @@ class RegisterView(View):
         login(request, user)
         # 响应结果  重定向到首页
         return redirect(reverse('contents:index'))
+
+
+class LoginView(View):
+    """用户登录"""
+
+    def get(self, request):
+        """提供用户登录页面"""
+        return render(request, 'login.html')
+
+    def post(self, request):
+        """实现用户登录逻辑"""
+        pass
