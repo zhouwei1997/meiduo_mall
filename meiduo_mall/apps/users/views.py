@@ -3,7 +3,7 @@
 import re
 
 from django import http
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from django.db import DatabaseError
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -119,4 +119,29 @@ class LoginView(View):
 
     def post(self, request):
         """实现用户登录逻辑"""
-        pass
+        # 接受参数
+        username = request.POST.get('username')  # 用户名
+        password = request.POST.get('password')  # 密码
+        remembered = request.POST.get('remembered')  # 记住登录
+        # 校验参数
+        if not all([username, password]):  # 判断参数是否齐全
+            return http.HttpResponseForbidden('缺少必传参数')
+        if not re.match(r'^[a-zA-Z0-9_-]{5,20}$', username):  # 判断用户名是否是5-20个字符
+            return http.HttpResponseForbidden('请输入正确的用户名或手机号')
+        if not re.match(r'^[0-9A-Za-z]{8,20}$', password):  # 判断密码是否是8-20个字符
+            return http.HttpResponseForbidden('密码最少为8位，最长为20位')
+        # 认证登录用户：使用账号查询用户是否存在，如果用户存在，在校验密码是否正确
+        user = authenticate(username=username, password=password)
+        if user is None:
+            return render(request, 'login.html', {'account_errmsg': '账号或密码错误'})
+        # 会话保持：保持登录状态
+        login(request, user)
+        # 设置状态保持的周期
+        if remembered != 'on':
+            # 没有记住用户，浏览器会话结束就过期
+            request.session.set_expiry(0)  # 单位为秒
+        else:
+            # 记住用户，设置周期为 14天
+            request.session.set_expiry(None)
+        # 响应结果：重定向到首页
+        return redirect(reverse('contents:index'))
