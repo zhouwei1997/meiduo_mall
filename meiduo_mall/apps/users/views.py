@@ -4,6 +4,7 @@ import re
 
 from django import http
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError
 from django.shortcuts import render, redirect
 from django.urls import reverse
@@ -169,3 +170,11 @@ class LogoutView(View):
         response.delete_cookie('username')
         # 响应结果：重定向到首页
         return response
+
+
+class UserInfoView(LoginRequiredMixin, View):
+    """用户中心"""
+
+    def get(self, request):
+        """提供个人信息页面"""
+        return render(request, 'user_center_info.html')
