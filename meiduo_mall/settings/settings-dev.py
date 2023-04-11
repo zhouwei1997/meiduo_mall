@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'users',  # 用户模块
     'contents',  # 首页广告模块
     'verifications',  # 验证码模块
+    'oauth',  # 第三方认证
 ]
 
 MIDDLEWARE = [
