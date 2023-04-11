@@ -151,7 +151,13 @@ class LoginView(View):
             # 记住用户，设置周期为 14天
             request.session.set_expiry(None)
         # 响应结果：重定向到首页
-        response = redirect(reverse('contents:index'))
+        next = request.GET.get('next')
+        if next:
+            # 重定向到next
+            response = redirect(next)
+        else:
+            # 重定向到首页
+            response = redirect(reverse('contents:index'))
         # 用户名缓存到cookie中
         response.set_cookie('username', user.username, max_age=3600 * 24 * 15)
         # 响应结果：重定向到首页

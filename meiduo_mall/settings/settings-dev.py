@@ -218,7 +218,8 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(log_path, 'meiduo_mall-{}.log'.format(time.strftime('%Y-%m-%d'))),  # 日志文件的位置
+            # 日志文件的位置
+            'filename': os.path.join(log_path, 'meiduo_mall-{}.log'.format(time.strftime('%Y-%m-%d'))),
             'maxBytes': 300 * 1024 * 1024,  # 文件大小  300M
             'backupCount': 10,  # 备份数
             'formatter': 'standard',  # 输出格式
@@ -246,3 +247,5 @@ LOGGING = {
 AUTH_USER_MODEL = 'users.User'
 # 指定自定义用户认证后端
 AUTHENTICATION_BACKENDS = ['users.utils.UsernameMobileBackend']
+# 判断用户是否登录后，指定未登录用户重定向的地址
+LOGIN_URL = '/login/'
