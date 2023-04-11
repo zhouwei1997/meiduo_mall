@@ -107,7 +107,13 @@ class RegisterView(View):
         # 实现会话保持
         login(request, user)
         # 响应结果  重定向到首页
-        return redirect(reverse('contents:index'))
+        # return redirect(reverse('contents:index'))
+        # 响应结果：重定向到首页
+        response = redirect(reverse('contents:index'))
+        # 用户名缓存到cookie中
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 15)
+        # 响应结果：重定向到首页
+        return response
 
 
 class LoginView(View):
@@ -144,4 +150,8 @@ class LoginView(View):
             # 记住用户，设置周期为 14天
             request.session.set_expiry(None)
         # 响应结果：重定向到首页
-        return redirect(reverse('contents:index'))
+        response = redirect(reverse('contents:index'))
+        # 用户名缓存到cookie中
+        response.set_cookie('username', user.username, max_age=3600 * 24 * 15)
+        # 响应结果：重定向到首页
+        return response
