@@ -4,9 +4,13 @@ import logging
 from QQLoginTool.QQtool import OAuthQQ
 from django import http
 from django.conf import settings
+from django.contrib.auth import login
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views import View
 
 from meiduo_mall.utils.response_code import RETCODE
+from oauth.models import OAuthQQUser
 
 # 创建日志输出器
 logger = logging.getLogger('django')
@@ -33,12 +37,32 @@ class QQAuthUserView(View):
             logging.error(e)
             return http.HttpResponseServerError('OAuth2.0认证失败')
 
+        # 使用openid判断该QQ用户是否绑定过
+        try:
+            oauth_user = OAuthQQUser.objects.get(openid=openid)
+        except OAuthQQUser.DoesNotExist:
+            # openid未绑定用户
+            context = {'openid': openid}
+            return render(request, 'oauth_callback.html', context)
+        else:
+            # openid已绑定用户,oauth_user.user表示从QQ登录模型类对象中找到对应的用户模型类对象
+            login(request, oauth_user.user)
+            # 重定向到首页
+            response = redirect(reverse('contents:index'))
+            response.set_cookie('username', oauth_user.user.username, max_age=3600 * 24 * 15)
+            # 响应结果
+            return response
+
+    def post(self, request):
+        pass
+
 
 class QQAuthURLView(View):
     """提供QQ登录扫码页面"""
 
     def get(self, request):
         # 接受next
+        next = request.GET.get('next')
         # 创建工具对象
         oauth = OAuthQQ(
             client_id=settings.QQ_CLIENT_ID,
