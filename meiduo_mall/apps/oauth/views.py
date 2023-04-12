@@ -11,8 +11,9 @@ from django.views import View
 
 from meiduo_mall.utils.response_code import RETCODE
 from oauth.models import OAuthQQUser
-
 # 创建日志输出器
+from oauth.utils import generate_access_token
+
 logger = logging.getLogger('django')
 
 
@@ -42,7 +43,8 @@ class QQAuthUserView(View):
             oauth_user = OAuthQQUser.objects.get(openid=openid)
         except OAuthQQUser.DoesNotExist:
             # openid未绑定用户
-            context = {'openid': openid}
+            access_token_openid = generate_access_token(openid)
+            context = {'access_token_openid': access_token_openid}
             return render(request, 'oauth_callback.html', context)
         else:
             # openid已绑定用户,oauth_user.user表示从QQ登录模型类对象中找到对应的用户模型类对象
