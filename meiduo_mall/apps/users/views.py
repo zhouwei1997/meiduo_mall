@@ -1,5 +1,6 @@
 # Create your views here.
-
+import json
+import logging
 import re
 
 from django import http
@@ -13,6 +14,8 @@ from django_redis import get_redis_connection
 
 from meiduo_mall.utils.response_code import RETCODE
 from users.models import User
+
+logger = logging.getLogger('django')
 
 
 class MobileCountView(View):
@@ -198,4 +201,19 @@ class EmailView(View):
     """添加邮箱"""
 
     def put(self, request):
-        pass
+        email = json.loads(request.body.decode()).get('email')
+        if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
+            return http.HttpResponseForbidden('参数email有误')
+        try:
+            request.user.email = email
+            request.user.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({
+                'code': RETCODE.DBERR,
+                'errmsg': '添加邮箱失败'
+            })
+        return http.JsonResponse({
+            'code': RETCODE.OK,
+            'errmsg': '添加邮箱成功'
+        })
