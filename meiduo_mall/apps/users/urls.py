@@ -24,4 +24,6 @@ urlpatterns = [
     url(r'^info/$', views.UserInfoView.as_view(), name='info'),
     # 收获地址
     url(r'^address/$', views.UserInfoView.as_view(), name='address'),
+    # 添加邮箱
+    url(r'^emails/$', views.EmailView.as_view()),
 ]

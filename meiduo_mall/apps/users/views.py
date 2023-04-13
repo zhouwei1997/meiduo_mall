@@ -192,3 +192,10 @@ class UserInfoView(LoginRequiredMixin, View):
             'email_active': request.user.email_active
         }
         return render(request, 'user_center_info.html', context)
+
+
+class EmailView(View):
+    """添加邮箱"""
+
+    def put(self, request):
+        pass
