@@ -183,4 +183,12 @@ class UserInfoView(LoginRequiredMixin, View):
 
     def get(self, request):
         """提供个人信息页面"""
-        return render(request, 'user_center_info.html')
+
+        #  如果LoginRequiredMixin判断出用户已登录，那么request.user就是用户对象
+        context = {
+            'username': request.user.username,
+            'mobile': request.user.mobile,
+            'email': request.user.email,
+            'email_active': request.user.email_active
+        }
+        return render(request, 'user_center_info.html', context)
