@@ -13,6 +13,7 @@ from django.views import View
 from django_redis import get_redis_connection
 
 from meiduo_mall.utils.response_code import RETCODE
+from meiduo_mall.utils.views import LoginRequiredJSONMinxin
 from users.models import User
 
 logger = logging.getLogger('django')
@@ -197,7 +198,7 @@ class UserInfoView(LoginRequiredMixin, View):
         return render(request, 'user_center_info.html', context)
 
 
-class EmailView(View):
+class EmailView(LoginRequiredJSONMinxin, View):
     """添加邮箱"""
 
     def put(self, request):
