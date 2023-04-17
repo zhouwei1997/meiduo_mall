@@ -214,6 +214,8 @@ class EmailView(LoginRequiredJSONMinxin, View):
                 'code': RETCODE.DBERR,
                 'errmsg': '添加邮箱失败'
             })
+        # 发送邮箱验证
+        
         return http.JsonResponse({
             'code': RETCODE.OK,
             'errmsg': '添加邮箱成功'
