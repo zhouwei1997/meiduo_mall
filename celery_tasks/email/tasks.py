@@ -26,11 +26,13 @@ def send_verify_email(to_email, verify_url):
     subject = "美多商城邮箱验证"
     html_message = '<p>尊敬的用户，您好！</p>' \
                    '<p>感谢您使用美多商城。</p>' \
-                   '<p>您的邮箱为：%s 。请点击此连接季后您的邮箱：</p>' \
+                   '<p>您的邮箱为：%s 。请点击此连接激活您的邮箱：</p>' \
                    '<p><a href="%s">%s</p>' % (to_email, verify_url, verify_url)
-    try:
-        send_mail(subject, "", settings.EMAIL_FROM, [to_email], html_message=html_message)
-    except Exception as e:
-        logger.error(e)
-        # 有异常重试三次
-        raise self.retry(exc=e, max_retries=3)
+
+    # try:
+    #     send_mail(subject, '', settings.EMAIL_FROM, [to_email], html_message=html_message)
+    # except Exception as e:
+    #     # 触发错误重试：最多重新3次
+    #     raise self.retry(exc=e, max_retries=3)
+    send_mail(subject, '', settings.EMAIL_FROM, [to_email], html_message=html_message)
+    # send_mail(subject, '', '美多商城<hengyu19971023@163.com>', [to_email], html_message=html_message)

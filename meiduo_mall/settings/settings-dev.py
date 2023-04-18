@@ -102,7 +102,7 @@ DATABASES = {
         'NAME': 'meiduo',  # 你要存储数据的库名，事先要创建
         'USER': 'root',  # 数据库用户名
         'PASSWORD': 'zhouwei1997',  # 密码
-        'HOST': 'localhost',  # 主机
+        'HOST': '127.0.0.1',  # 主机
         'PORT': '3306',  # 数据库使用的端口
     }
 }
@@ -259,7 +259,9 @@ QQ_REDIRECT_URI = 'http://www.meiduo.site:8000/oauth_callback'
 # 邮件参数
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # 导入邮件模块
 EMAIL_HOST = 'smtp.163.com'  # 发邮件主机
+EMAIL_USE_TLS = True  # 是否使用TLS安全传输协议(用于在两个通信应用程序之间提供保密性和数据完整性)
+EMAIL_USE_SSL = False  # 是否使用SSL加密，qq企业邮箱要求使用，163邮箱设置为True的时候会报ssl的错误
 EMAIL_PORT = 25  # 发邮件端口
 EMAIL_HOST_USER = 'hengyu19971023@163.com'  # 授权的邮箱
-EMAIL_HOST_PASSWORD = 'UOWHVGZHYFOXAYQD'  # 邮箱授权时获得的密码，非注册登录密码
-EMAIL_FROM = '美多商城<dailyfreshzxc@yeah.net>'  # 发件人抬头
+EMAIL_HOST_PASSWORD = 'KIQRCIYAZEBDWHCR'  # 邮箱授权时获得的密码，非注册登录密码
+EMAIL_FROM = '美多商城<hengyu19971023@163.com>'  # 发件人抬头

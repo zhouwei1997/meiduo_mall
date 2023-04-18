@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.views import View
 from django_redis import get_redis_connection
 
+from celery_tasks.email.tasks import send_verify_email
 from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJSONMinxin
 from users.models import User
@@ -215,7 +216,8 @@ class EmailView(LoginRequiredJSONMinxin, View):
                 'errmsg': '添加邮箱失败'
             })
         # 发送邮箱验证
-        
+        verify_url = 'generate_ver'
+        send_verify_email.delay(email, verify_url)
         return http.JsonResponse({
             'code': RETCODE.OK,
             'errmsg': '添加邮箱成功'
