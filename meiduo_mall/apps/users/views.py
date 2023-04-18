@@ -16,6 +16,7 @@ from celery_tasks.email.tasks import send_verify_email
 from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJSONMinxin
 from users.models import User
+from users.utils import generate_verify_email_url
 
 logger = logging.getLogger('django')
 
@@ -216,7 +217,7 @@ class EmailView(LoginRequiredJSONMinxin, View):
                 'errmsg': '添加邮箱失败'
             })
         # 发送邮箱验证
-        verify_url = 'generate_ver'
+        verify_url = generate_verify_email_url(request.user)
         send_verify_email.delay(email, verify_url)
         return http.JsonResponse({
             'code': RETCODE.OK,

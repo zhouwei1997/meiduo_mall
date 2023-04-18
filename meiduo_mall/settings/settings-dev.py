@@ -265,3 +265,4 @@ EMAIL_PORT = 25  # 发邮件端口
 EMAIL_HOST_USER = 'hengyu19971023@163.com'  # 授权的邮箱
 EMAIL_HOST_PASSWORD = 'KIQRCIYAZEBDWHCR'  # 邮箱授权时获得的密码，非注册登录密码
 EMAIL_FROM = '美多商城<hengyu19971023@163.com>'  # 发件人抬头
+EMAIL_VERIFY_URL = 'http://127.0.0.1:8000/emails/verification'  # 邮箱验证连接
