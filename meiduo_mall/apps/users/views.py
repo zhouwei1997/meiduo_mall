@@ -16,7 +16,7 @@ from celery_tasks.email.tasks import send_verify_email
 from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJSONMinxin
 from users.models import User
-from users.utils import generate_verify_email_url
+from users.utils import generate_verify_email_url, check_verify_email_token
 
 logger = logging.getLogger('django')
 
@@ -223,3 +223,27 @@ class EmailView(LoginRequiredJSONMinxin, View):
             'code': RETCODE.OK,
             'errmsg': '添加邮箱成功'
         })
+
+
+class VerifyEmailView(View):
+    """验证邮箱"""
+
+    def get(self, request):
+        # 接收参数
+        token = request.GET.get('token')
+        # 校验参数
+        if not token:
+            return http.HttpResponseForbidden('缺少token')
+        # 从token中提取用户的信息 user_id ==> user
+        user = check_verify_email_token(token)
+        if not user:
+            return http.HttpResponseForbidden('无效的token')
+        # 将用户的email_active字段设置为True
+        try:
+            user.email_active = True
+            user.save()
+        except Exception as e:
+            logger.error(e)
+            return http.HttpResponseServerError('激活邮箱失败')
+        # 响应结果：重定向到用户中心
+        return redirect(reverse('users:info'))
