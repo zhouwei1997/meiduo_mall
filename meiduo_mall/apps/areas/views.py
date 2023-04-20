@@ -27,7 +27,8 @@ class AreaView(View):
             if not province_list:
                 # 提供省份数据
                 try:
-                    province_model_list = Area.objects.filter(parent_isnull=True)
+                    province_model_list = Area.objects.filter(
+                        parent__isnull=True)
                     # 序列化省级数据
                     province_list = []
                     for province_model in province_model_list:
@@ -50,7 +51,7 @@ class AreaView(View):
                 'province_list': province_list
             })
         else:
-            sub_data = cache.get('sub_data')
+            sub_data = cache.get('sub_area_' + area_id)
             if not sub_data:
                 try:
                     # 提供市级或区县数据
@@ -67,9 +68,9 @@ class AreaView(View):
                     sub_data = {
                         'id': parent_model.id,
                         'name': parent_model.name,
-                        'subs': [{}, {}]
+                        'subs': subs
                     }
-                    cache.set('sub_data', sub_data, 3600)
+                    cache.set('sub_area_' + area_id, sub_data, 3600)
                 except Exception as e:
                     logger.error(e)
                     return http.JsonResponse({
