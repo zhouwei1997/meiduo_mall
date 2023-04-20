@@ -21,6 +21,14 @@ from users.utils import generate_verify_email_url, check_verify_email_token
 logger = logging.getLogger('django')
 
 
+class AddressView(LoginRequiredMixin, View):
+    """用户收货地址"""
+
+    def get(self, request):
+        """提供收货地址页面"""
+        return render(request, 'user_center_site.html')
+
+
 class MobileCountView(View):
     """判断手机号是否重复"""
 
@@ -91,7 +99,7 @@ class RegisterView(View):
             return http.HttpResponseForbidden('请输入正确的手机号')
         # 判断短信验证码是否合法
         redis_conn = get_redis_connection('verify_code')
-        sms_code_server = redis_conn.get('sms_%s' % mobile)
+        sms_code_server = get('sms_%s' % mobile)
         if sms_code_server is None:
             return render(
                 request, 'register.html', {
@@ -204,7 +212,7 @@ class EmailView(LoginRequiredJSONMinxin, View):
     """添加邮箱"""
 
     def put(self, request):
-        email = json.loads(request.body.decode()).get('email')
+        email = json.get('email')
         if not re.match(r'^[a-z0-9][\w\.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', email):
             return http.HttpResponseForbidden('参数email有误')
         try:
