@@ -66,6 +66,10 @@ class AddressCreateView(LoginRequiredJSONMinxin, View):
                 mobile=mobile,
                 tel=tel,
                 email=email)
+            # 如果没有默认地址，则新增地址为默认地址
+            if not request.user.default_address:
+                request.user.default_address = address
+                request.user.save()
         except Exception as e:
             logger.error(e)
             return http.JsonResponse({
