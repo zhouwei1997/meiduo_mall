@@ -77,9 +77,22 @@ class AddressCreateView(LoginRequiredJSONMinxin, View):
                 'errmsg': '新增地址失败'
             })
         # 响应新增地址结果：需要将新增地址渲染到前端
+        address_dict = {
+            'id': address.id,
+            'title': address.title,
+            'receiver': address.receiver,
+            'province': address.province.name,
+            'city': address.city.name,
+            'district': address.district.name,
+            'place': address.place,
+            'mobile': address.mobile,
+            'tel': address.tel,
+            'email': address.email,
+        }
         return http.JsonResponse({
             'code': RETCODE.OK,
-            'errmsg': '新增地址成功'
+            'errmsg': '新增地址成功',
+            'address': address_dict
         })
 
 
