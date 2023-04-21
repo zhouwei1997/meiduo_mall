@@ -16,6 +16,7 @@ from requests import get
 from celery_tasks.email.tasks import send_verify_email
 from meiduo_mall.utils.response_code import RETCODE
 from meiduo_mall.utils.views import LoginRequiredJSONMinxin
+from users import constants
 from users.models import User, Address
 from users.utils import generate_verify_email_url, check_verify_email_token
 
@@ -27,6 +28,13 @@ class AddressCreateView(LoginRequiredJSONMinxin, View):
 
     def post(self, request):
         """新增地址"""
+        # 判断用户地址数量是否超过上限
+        count = request.user.addresses.count()
+        if count > constants.USER_ADDRESS_COUNTS_LIMIT:
+            return http.JsonResponse({
+                'code': RETCODE.THROTTLINGERR,
+                'errmsg': '超出用户地址上限'
+            })
         # 接受参数
         json_dict = json.loads(request.body.decode())
         receiver = json_dict.get("receiver")
