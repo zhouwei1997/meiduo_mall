@@ -23,6 +23,29 @@ from users.utils import generate_verify_email_url, check_verify_email_token
 logger = logging.getLogger('django')
 
 
+class DefaultAddressView(LoginRequiredJSONMinxin, View):
+    """设置默认地址"""
+
+    def put(self, request, address_id):
+        """设置默认地址"""
+        try:
+            # 接受参数，查询地址
+            address = Address.objects.get(id=address_id)
+            # 设置地址为默认参数
+            request.user.default_address = address
+            request.user.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({
+                'code': RETCODE.DBERR,
+                'errmsg': '设置默认地址失败'
+            })
+        return http.JsonResponse({
+            'code': RETCODE.OK,
+            'errmsg': '设置默认地址成功'
+        })
+
+
 class UpdateDestroyAddressView(LoginRequiredJSONMinxin, View):
     """修改和删除地址"""
 
