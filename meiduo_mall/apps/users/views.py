@@ -36,6 +36,8 @@ class UpdateTitleAddressView(LoginRequiredJSONMinxin, View):
         # 接受地址标题
         json_dict = json.loads(request.body.decode())
         title = json_dict.get('title')
+        if not title:
+            return http.HttpResponseForbidden('缺少title')
         try:
             # 查询地址
             address = Address.objects.get(id=address_id)
