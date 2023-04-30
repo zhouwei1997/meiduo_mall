@@ -26,25 +26,26 @@ logger = logging.getLogger('django')
 class AddressCreateView(LoginRequiredJSONMinxin, View):
     """新增地址"""
 
-    def post(self, request):
+    def post(self, reqeust):
         """新增地址"""
         # 判断用户地址数量是否超过上限
-        count = request.user.addresses.count()
+        count = reqeust.user.addresses.count()
         if count > constants.USER_ADDRESS_COUNTS_LIMIT:
             return http.JsonResponse({
                 'code': RETCODE.THROTTLINGERR,
                 'errmsg': '超出用户地址上限'
             })
         # 接受参数
-        json_dict = json.loads(request.body.decode())
-        receiver = json_dict.get("receiver")
-        province_id = json_dict.get("province_id ")
-        city_id = json_dict.get("city_id")
-        district_id = json_dict.get("district_id")
-        place = json_dict.get("place")
-        mobile = json_dict.get("mobile")
-        tel = json_dict.get("tel")
-        email = json_dict.get("email")
+        json_str = reqeust.body.decode()
+        json_dict = json.loads(json_str)
+        receiver = json_dict.get('receiver')
+        province_id = json_dict.get('province_id')
+        city_id = json_dict.get('city_id')
+        district_id = json_dict.get('district_id')
+        place = json_dict.get('place')
+        mobile = json_dict.get('mobile')
+        tel = json_dict.get('tel')
+        email = json_dict.get('email')
         # 校验参数
         if not all([receiver, province_id, city_id,
                     district_id, place, mobile]):
@@ -73,7 +74,7 @@ class AddressCreateView(LoginRequiredJSONMinxin, View):
                 place=place,
                 mobile=mobile,
                 tel=tel,
-                email=email)
+                email=email, )
             # 如果没有默认地址，则新增地址为默认地址
             if not request.user.default_address:
                 request.user.default_address = address

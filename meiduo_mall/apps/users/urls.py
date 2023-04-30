@@ -22,12 +22,12 @@ urlpatterns = [
     url(r'^logout/$', views.LogoutView.as_view(), name='logout'),
     # 用户中心
     url(r'^info/$', views.UserInfoView.as_view(), name='info'),
-    # 收货地址
-    url(r'^addresses/$', views.AddressView.as_view(), name='address'),
     # 添加邮箱
     url(r'^emails/$', views.EmailView.as_view()),
     # 验证邮箱
     url(r'^emails/verification/$', views.VerifyEmailView.as_view()),
+    # 展示收货地址
+    url(r'^addresses/$', views.AddressView.as_view(), name='address'),
     # 新增用户地址
     url(r'^addresses/create/$', views.AddressCreateView.as_view()),
 ]
