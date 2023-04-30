@@ -65,7 +65,7 @@ class AddressCreateView(LoginRequiredJSONMinxin, View):
         # 保存用户传入的地址信息
         try:
             address = Address.objects.create(
-                user=request.user,
+                user=reqeust.user,
                 title=receiver,  # 标题默认就是收货人
                 receiver=receiver,
                 province_id=province_id,
@@ -76,9 +76,9 @@ class AddressCreateView(LoginRequiredJSONMinxin, View):
                 tel=tel,
                 email=email, )
             # 如果没有默认地址，则新增地址为默认地址
-            if not request.user.default_address:
-                request.user.default_address = address
-                request.user.save()
+            if not reqeust.user.default_address:
+                reqeust.user.default_address = address
+                reqeust.user.save()
         except Exception as e:
             logger.error(e)
             return http.JsonResponse({
