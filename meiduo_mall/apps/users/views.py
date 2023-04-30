@@ -103,10 +103,24 @@ class UpdateDestroyAddressView(LoginRequiredJSONMinxin, View):
         """
         删除地址
         :param request:
-        :param address_id:
-        :return:
+        :param address_id:需要删除的地址id
+        :return: 指定地址的逻辑删除 is_delete = True
         """
-        pass
+        try:
+            address = Address.objects.get(id=address_id)
+            address.is_delete = True
+            address.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({
+                'code': RETCODE.DBERR,
+                'errmsg': '删除地址失败'
+            })
+        # 响应更新地址结果
+        return http.JsonResponse({
+            'code': RETCODE.OK,
+            'errmsg': '删除地址成功'
+        })
 
 
 class AddressCreateView(LoginRequiredJSONMinxin, View):
