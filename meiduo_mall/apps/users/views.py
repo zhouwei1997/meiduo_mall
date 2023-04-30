@@ -23,6 +23,37 @@ from users.utils import generate_verify_email_url, check_verify_email_token
 logger = logging.getLogger('django')
 
 
+class UpdateTitleAddressView(LoginRequiredJSONMinxin, View):
+    """设置地址标题"""
+
+    def put(self, request, address_id):
+        """
+        设置地址标题
+        :param request:
+        :param address_id:
+        :return:
+        """
+        # 接受地址标题
+        json_dict = json.loads(request.body.decode())
+        title = json_dict.get('title')
+        try:
+            # 查询地址
+            address = Address.objects.get(id=address_id)
+            # 设置新的标题
+            address.title = title
+            address.save()
+        except Exception as e:
+            logger.error(e)
+            return http.JsonResponse({
+                'code': RETCODE.DBERR,
+                'errmsg': '设置地址标题失败'
+            })
+        return http.JsonResponse({
+            'code': RETCODE.OK,
+            'errmsg': '设置地址标题成功'
+        })
+
+
 class DefaultAddressView(LoginRequiredJSONMinxin, View):
     """设置默认地址"""
 

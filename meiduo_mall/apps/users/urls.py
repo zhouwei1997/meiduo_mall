@@ -34,4 +34,6 @@ urlpatterns = [
     url(r'^addresses/(?P<address_id>\d+)/$', views.UpdateDestroyAddressView.as_view()),
     # 设置默认地址
     url(r'^addresses/(?P<address_id>\d+)/default/$', views.DefaultAddressView.as_view()),
+    # 修改地址标题
+    url(r'^addresses/(?P<address_id>\d+)/title/$', views.UpdateTitleAddressView.as_view()),
 ]
